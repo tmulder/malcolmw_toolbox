@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Apr 12 15:21:25 2013
-
-@author: malcolm
-"""
 import matplotlib.pyplot as plt
 import time
 

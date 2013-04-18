@@ -1,11 +1,11 @@
-#! /opt/antelope/5.2-64/bin/python
-
 import matplotlib.pyplot as plt
+
+import argparse
 
 from math import log
 
-input_file = "/home/malwhite/dropbox/magnitude_times.txt"
-output_file = "/home/malwhite/dropbox/GR_plot.png"
+#input_file = "/home/malcolm/dropbox/SSA/decay_rate/magnitude_times.txt"
+#output_file = "/home/malcolm/dropbox/SSA/decay_rate/GR_plot.png"
 
 def readfile(path):
 	infile = open( path, "r" )
@@ -47,16 +47,21 @@ def plot_gutenberg_richter(mag,ax):
 	ax.set_xlabel( "Magnitude Bin" )
 	ax.set_ylabel( "Count" )
 
-t,mag = readfile(input_file)
+parser = argparse.ArgumentParser(description="Plot GR Relation and modified Omori's Law.")
+parser.add_argument('input_file',metavar='infile',type=str,nargs=1,\
+		help = "Input file")
+parser.add_argument('output_file',metavar='outfile',type=str,nargs=1,\
+		help = "Output file")
+args = parser.parse_args()
+
+
+t,mag = readfile(args.input_file[0])
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
 plot_gutenberg_richter(mag,ax1)
-#fig = plt.figure()
 ax2 = fig.add_subplot(212)
 ax2.plot(t,mag,"ko")
 ax2.set_xlabel( "Days since main shock" )
 ax2.set_ylabel( "Magnitude" )
-#ax2.xlabel("Days since main Shock")
-#ax2.ylabel("Magnitude")
-plt.savefig(output_file)
+plt.savefig(args.output_file[0])
 plt.show()
