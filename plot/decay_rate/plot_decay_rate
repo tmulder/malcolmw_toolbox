@@ -1,0 +1,62 @@
+#! /opt/antelope/5.2-64/bin/python
+
+import matplotlib.pyplot as plt
+
+from math import log
+
+input_file = "/home/malwhite/dropbox/magnitude_times.txt"
+output_file = "/home/malwhite/dropbox/GR_plot.png"
+
+def readfile(path):
+	infile = open( path, "r" )
+
+	magnitude, t = [],[]
+
+	for line in infile:
+		l = line.split()
+		magnitude.append(float(l[0]))
+		t.append(float(l[1]))
+	return t, magnitude
+
+def plot_gutenberg_richter(mag,ax):
+	count = {-1.5:0, -0.5:0, 0.5:0, 1.5:0, 2.5:0, 3.5:0, 4.5:0, 5.5:0, 6.5:0, 7.5:0, 8.5:0, 9.5:0 }
+	for m in mag:
+		for key in count:
+			if m > key-0.5 and m <= key+0.5: count[key] += 1
+
+	N=len(mag)
+	#N=10000
+	print N
+
+	#plt.subplot(subp)
+	bin = sorted(count)
+	val = [ count[x] for x in bin ]
+	bin = [ x-0.4 for x in bin ]
+
+	a = log(N,10)
+	M_max = max(mag)
+	b = a/M_max
+
+	def gr_reln(m):
+		return 10**(a-b*m)
+
+	curve = [gr_reln(x) for x in range(1,11)]
+
+	ax.bar( bin, val )
+	ax.plot( range(1,11), curve, "r" )
+	ax.set_xlabel( "Magnitude Bin" )
+	ax.set_ylabel( "Count" )
+
+t,mag = readfile(input_file)
+fig = plt.figure()
+ax1 = fig.add_subplot(211)
+plot_gutenberg_richter(mag,ax1)
+#fig = plt.figure()
+ax2 = fig.add_subplot(212)
+ax2.plot(t,mag,"ko")
+ax2.set_xlabel( "Days since main shock" )
+ax2.set_ylabel( "Magnitude" )
+#ax2.xlabel("Days since main Shock")
+#ax2.ylabel("Magnitude")
+plt.savefig(output_file)
+plt.show()
