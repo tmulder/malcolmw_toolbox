@@ -111,6 +111,10 @@ def plot_omori_log_log(t,mag):
 
 	line_ave_y = [ 10**(m_ave*s + b_ave) for s in log_x ]
 	line_ave_x = [ 10**s for s in log_x ]
+
+	line_lb_y = [ 10**(0.9*s + b_ave) for s in log_x ]
+	line_ub_y = [ 10**(1.5*s + b_ave) for s in log_x ]
+	line_bound_x = [ 10**s for s in log_x ]
 	
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -136,6 +140,9 @@ def plot_omori_log_log(t,mag):
 	ax.plot(line2_x_extrap,line2_y_extrap,"r--")
 
 	ax.plot(line_ave_x,line_ave_y,"k")
+
+	ax.plot(line_bound_x,line_lb_y,".")
+	ax.plot(line_bound_x,line_ub_y,"*")
 ###
 	fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -157,6 +164,9 @@ def plot_omori_log_log(t,mag):
         ax.plot(line2_x_extrap,line2_y_extrap,"r--")
 
 	ax.plot(line_ave_x,line_ave_y,"k")
+
+	ax.plot(line_bound_x,line_lb_y,".")
+	ax.plot(line_bound_x,line_ub_y,"*")
 ###	
 
 def plot_omori(t,mag):
