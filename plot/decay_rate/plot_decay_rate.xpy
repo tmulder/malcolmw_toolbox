@@ -70,6 +70,95 @@ def plot_gutenberg_richter(mag):
 	ax.set_ylabel( "Event count" )
 	ax.text( 6.0, 0.9*count_max, "a=%.3f, b=%.3f" % (a,b) )
 
+def plot_omori_log_log(t,mag):
+	X_INT = 1.0 #plot data with sample interval 1.0 days
+	GAP_START = 5
+	GAP_END = 15
+	count = {}
+
+	t_max = max(t)
+
+	for time in np.arange(1,t_max+X_INT,X_INT): count[time] = 0
+
+	for key in count:
+		count[key] = len([time for time in t if time <= key])
+	
+	x_values = sorted(count)
+	y_values = [count[x] for x in x_values]
+	log_x = [log(s,10) for s in x_values]
+	log_y = [log(s,10) for s in y_values]
+
+	m1,b1 = np.polyfit(log_x[:GAP_START], log_y[:GAP_START],1)
+	m2,b2 = np.polyfit(log_x[GAP_END:], log_y[GAP_END:], 1)
+	m_ave = (m1+m2)/2
+	b_ave = (b1+b2)/2
+
+	print "m1: ",m1,"\tb1: ",b1
+	print "m2: ",m2,"\tb2: ",b2
+	print "m_ave: ", m_ave, "\tb_ave: ",b_ave
+
+	line1_y = [ 10**(m1*s + b1) for s in log_x[:GAP_START] ]
+	line1_x = [ 10**s for s in log_x[:GAP_START] ]
+
+	line2_y = [ 10**(m2*s + b2) for s in log_x[GAP_END:] ]
+	line2_x = [ 10**s for s in log_x[GAP_END:] ]
+
+	line1_y_extrap = [ 10**(m1*s + b1) for s in log_x[GAP_START-1:] ]
+	line1_x_extrap = [ 10**s for s in log_x[GAP_START-1:] ]
+
+	line2_y_extrap = [ 10**(m2*s + b2) for s in log_x[:GAP_END+1] ]
+	line2_x_extrap = [ 10**s for s in log_x[:GAP_END+1] ]
+
+	line_ave_y = [ 10**(m_ave*s + b_ave) for s in log_x ]
+	line_ave_x = [ 10**s for s in log_x ]
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.set_xscale("log")
+	ax.set_yscale("log")
+
+	ax.set_xlim( 0.8, max(x_values)+10 )
+	ax.set_ylim( min(y_values)-50, max(y_values)+250 )
+
+	ax.set_xlabel( "Days since main shock" )
+	ax.set_ylabel( "Cumulative number of events" )
+
+	ax.set_title( "Haida Gwaii Aftershock Sequence: Cumulative Event Count" )
+
+
+	ax.plot(x_values,y_values,"o")
+
+	ax.plot(line1_x,line1_y,"r")
+	ax.plot(line1_x_extrap,line1_y_extrap,"r--")
+
+	ax.plot(line2_x,line2_y,"r")
+	ax.plot(line2_x_extrap,line2_y_extrap,"r--")
+
+	ax.plot(line_ave_x,line_ave_y,"k")
+###
+	fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        ax.set_xlim( -1, max(x_values)+1 )
+        ax.set_ylim( min(y_values)-50, max(y_values)+50 )
+
+        ax.set_xlabel( "Days since main shock" )
+        ax.set_ylabel( "Cumulative number of events" )
+
+        ax.set_title( "Haida Gwaii Aftershock Sequence: Cumulative Event Count" )
+
+        ax.plot(x_values,y_values,"o")
+
+        ax.plot(line1_x,line1_y,"r")
+        ax.plot(line1_x_extrap,line1_y_extrap,"r--")
+
+        ax.plot(line2_x,line2_y,"r")
+        ax.plot(line2_x_extrap,line2_y_extrap,"r--")
+
+	ax.plot(line_ave_x,line_ave_y,"k")
+###	
+
 def plot_omori(t,mag):
 	D_LEN = 24*60*60	#number of seconds in a day
 	BIN_WIDTH = 1.0		#bin width in days
@@ -137,7 +226,9 @@ t,mag = readfile(args.input_file[0])
 
 #plot_gutenberg_richter(mag)
 
-plot_omori(t,mag)
+#plot_omori(t,mag)
+
+plot_omori_log_log(t,mag)
 
 #ax2 = fig.add_subplot(212)
 #ax2.plot(t,mag,"ko")

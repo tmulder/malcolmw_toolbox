@@ -1,0 +1,1 @@
+python ~/git/toolbox/plot/decay_rate/plot_decay_rate.xpy $1 $2
