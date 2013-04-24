@@ -20,6 +20,65 @@ def readfile(path):
 		t.append(float(l[1]))
 	return t, magnitude
 
+def plot_gutenberg_richter_2(mag):
+	#IMPROVEMENT
+	#maximum likelihood estimator should be used to determine a,b as opposed to least squares method
+	#see pasadena.wr.usgs.gov/office/kfelzer/AGU2006Talk.pdf
+
+	X_INT = 0.1
+        COMPLETENESS_LB = 4.0
+        COMPLETENESS_UB = 6.3
+        EXTRAP_LB = 1.0
+        EXTRAP_UB = 9.0
+
+        count = {}
+        for i in np.arange(-1.0,10.0, X_INT):
+                count[i] = 0
+
+        for m in mag:
+                for key in count:
+                        if m >= key: count[key] += 1
+
+        N=len(mag)
+        count_max = max([ count[key] for key in count ])
+
+        x_values = sorted(count)
+        y_values = [ count[x] for x in x_values ]
+
+        x_to_fit, y_to_fit = [],[]
+        for x_val in x_values:
+                if x_val > COMPLETENESS_LB and x_val <= COMPLETENESS_UB:
+                        x_to_fit.append(x_val)
+                        y_to_fit.append(log(count[x_val],10)) if not count[x_val] == 0 else y_to_fit.append(0)
+
+        b,a = np.polyfit(x_to_fit, y_to_fit, 1)
+        b=abs(b)
+
+        def gr_reln(m):
+                return 10**(a-b*m)
+
+	line_x_values = np.arange(COMPLETENESS_LB,COMPLETENESS_UB,X_INT)
+        line_y_values = [gr_reln(x) for x in line_x_values]
+        #extrap_x_values = [x for x in list(np.arange(EXTRAP_LB, COMPLETENESS_LB, X_INT))+list(np.arange(COMPLETENESS_UB, EXTRAP_UB, X_INT))]
+        extrap_x_values = [x for x in list(np.arange(EXTRAP_LB, EXTRAP_UB, X_INT)) if x not in line_x_values]
+        extrap_y_values = [gr_reln(x) for x in extrap_x_values]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_title( "Haida Gwaii Aftershock Sequence: Gutenberg-Richter Relationship" )
+        #ax.bar( bin_left, nevents, width=BIN_WIDTH, log=True )
+	ax.plot( x_values, y_values, "bo" )
+        ax.plot( line_x_values, line_y_values, "r" )
+        ax.plot( extrap_x_values, extrap_y_values, "r--" )
+        ax.set_xlabel( "Magnitude" )
+        #ax.set_xticks( np.arange(-1.0,10.0,BIN_WIDTH) )
+
+	ax.set_ylim( 0.5, count_max+0.3*count_max)
+	ax.set_xlim( -1.2, 9.0 )
+        ax.set_yscale("log")
+        ax.set_ylabel( "Events >= M" )
+        ax.text( 6.0, 0.7*count_max, "a=%.3f, b=%.3f" % (a,b) )
+
 def plot_gutenberg_richter(mag):
 	BIN_WIDTH = 0.1
 	COMPLETENESS_LB = 4.0
@@ -236,9 +295,11 @@ t,mag = readfile(args.input_file[0])
 
 #plot_gutenberg_richter(mag)
 
+plot_gutenberg_richter_2(mag)
+
 #plot_omori(t,mag)
 
-plot_omori_log_log(t,mag)
+#plot_omori_log_log(t,mag)
 
 #ax2 = fig.add_subplot(212)
 #ax2.plot(t,mag,"ko")
