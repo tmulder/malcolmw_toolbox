@@ -1,0 +1,2 @@
+export MW_SRC=/home/malcolm/git/toolbox/plot/src
+python $MW_SRC/toolbox_GUI.xpy $@
