@@ -1,1 +1,1 @@
-python src_link/plot_events_per_time.xpy $@
+python $MW_SRC/plot_events_per_time.xpy $@
