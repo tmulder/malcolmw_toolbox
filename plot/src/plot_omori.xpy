@@ -63,7 +63,7 @@ def plot_omori(time,mag):
 		curve_y = [ A*pow(x,m) for x in x_values ]
 		ax.plot(curve_x,curve_y,"r")
 		#Display fit parameters?
-		if args.display_fit_parameters: ax.text(0.1*max(x_values),0.9*max(y_values),"N(t) = A*t^(1-p)\nA = %.3f\n(1-p) = %.3f" % (A,m))
+		if args.display_fit_parameters: ax.text(0.1*max(x_values),0.9*max(y_values),"N(t) = A*t^(1-p)\nA = %.3f\np = %.3f" % (A,abs(m-1)))
 
 	#Reconstruct title/axes labels from command line arguments if necessary
 	if args.title:
