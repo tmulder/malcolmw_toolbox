@@ -62,6 +62,8 @@ def plot_omori(time,mag):
 		curve_x = x_values
 		curve_y = [ A*pow(x,m) for x in x_values ]
 		ax.plot(curve_x,curve_y,"r")
+		#Display fit parameters?
+		if args.display_fit_parameters: ax.text(0.1*max(x_values),0.9*max(y_values),"N(t) = A*t^(1-p)\nA = %.3f\n(1-p) = %.3f" % (A,m))
 
 	#Reconstruct title/axes labels from command line arguments if necessary
 	if args.title:
@@ -136,6 +138,7 @@ parser.add_argument('-ylim',dest='ylim',nargs=2,type=float,help='Plot range.')
 
 parser.add_argument('-f','--fit_data',action='store_true',help="Fit Omori's law curve to data.")
 parser.add_argument('-ll','--log_log_scale',action='store_true',help='Scale axes logarithmically.')
+parser.add_argument('-d','--display_fit_parameters',action='store_true',help="Display Omori's law parameters determined by best fit.")
 
 args = parser.parse_args()
 
