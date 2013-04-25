@@ -2,11 +2,13 @@ import matplotlib.pyplot as plt
 
 import argparse
 
-from math import log
+from math import log,pow
 
 import numpy as np
 
 def readfile(path):
+	""" Read data from input file """
+
         infile = open( path, "r" )
 
         magnitude, t = [],[]
@@ -18,178 +20,133 @@ def readfile(path):
         return t, magnitude
 
 
+def plot_omori(time,mag):
+	"""Generate cumulative number of events as function of time plot. Fit Omori's law curve if -f option specified."""
 
-def plot_omori_log_log(t,mag):
-        X_INT = 1.0 #plot data with sample interval 1.0 days
-        GAP_START = 5
-        GAP_END = 15
-        count = {}
+	#Get sample spacing from command line arguments or set to default
+	X_INT = args.x_int[0] if args.x_int else 1.0
 
-        t_max = max(t)
+	#Get the maximum origin time
+        t_max = max(time)
 
-        for time in np.arange(1,t_max+X_INT,X_INT): count[time] = 0
+	#Create bins of X_INT width
+	bins = np.arange(0,t_max+X_INT,X_INT)
 
-        for key in count:
-                count[key] = len([time for time in t if time <= key])
+	#Bin events
+	count = np.zeros(len(bins))
+	inds = np.digitize(time,bins)
+	for i in inds:
+		count[i-1] += 1
 
-        x_values = sorted(count)
-        y_values = [count[x] for x in x_values]
-        log_x = [log(s,10) for s in x_values]
-        log_y = [log(s,10) for s in y_values]
+	#Perform a cumulative count of events in each bin
+	cum_count = count.cumsum()
 
-        m1,b1 = np.polyfit(log_x[:GAP_START], log_y[:GAP_START],1)
-        m2,b2 = np.polyfit(log_x[GAP_END:], log_y[GAP_END:], 1)
-        m_ave = (m1+m2)/2
-        b_ave = (b1+b2)/2
-
-        print "m1: ",m1,"\tb1: ",b1
-        print "m2: ",m2,"\tb2: ",b2
-        print "m_ave: ", m_ave, "\tb_ave: ",b_ave
-
-        line1_y = [ 10**(m1*s + b1) for s in log_x[:GAP_START] ]
-        line1_x = [ 10**s for s in log_x[:GAP_START] ]
-
-        line2_y = [ 10**(m2*s + b2) for s in log_x[GAP_END:] ]
-        line2_x = [ 10**s for s in log_x[GAP_END:] ]
-
-        line1_y_extrap = [ 10**(m1*s + b1) for s in log_x[GAP_START-1:] ]
-        line1_x_extrap = [ 10**s for s in log_x[GAP_START-1:] ]
-
-        line2_y_extrap = [ 10**(m2*s + b2) for s in log_x[:GAP_END+1] ]
-        line2_x_extrap = [ 10**s for s in log_x[:GAP_END+1] ]
-
-        line_ave_y = [ 10**(m_ave*s + b_ave) for s in log_x ]
-        line_ave_x = [ 10**s for s in log_x ]
-
-        line_lb_y = [ 10**(0.9*s + b_ave) for s in log_x ]
-        line_ub_y = [ 10**(1.5*s + b_ave) for s in log_x ]
-        line_bound_x = [ 10**s for s in log_x ]
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-
-        ax.set_xlim( 0.8, max(x_values)+10 )
-        ax.set_ylim( min(y_values)-50, max(y_values)+250 )
-
-        ax.set_xlabel( "Days since main shock" )
-        ax.set_ylabel( "Cumulative number of events" )
-
-        ax.set_title( "Haida Gwaii Aftershock Sequence: Cumulative Event Count" )
+	x_values = [ b for b in bins ]
+	y_values = [ c for c in cum_count ]
 
 
-        ax.plot(x_values,y_values,"o")
+	#Plot data
+	##########
+	#Create figure
+	fig = plt.figure()
+	#Add a subplot
+	ax = fig.add_subplot(111)
 
-        ax.plot(line1_x,line1_y,"r")
-        ax.plot(line1_x_extrap,line1_y_extrap,"r--")
+	ax.plot(x_values,y_values,"bo")
 
-        ax.plot(line2_x,line2_y,"r")
-        ax.plot(line2_x_extrap,line2_y_extrap,"r--")
+	#Determine constants to Omori's law, if -f option specified
+	# N(t) = A*t^(1-p)
+	# N(t) = A*t^m
+	if args.fit_data:
+		A,m = fit_data(x_values,y_values)
+		curve_x = x_values
+		curve_y = [ A*pow(x,m) for x in x_values ]
+		ax.plot(curve_x,curve_y,"r")
 
-        ax.plot(line_ave_x,line_ave_y,"k")
+	#Reconstruct title/axes labels from command line arguments if necessary
+	if args.title:
+		#print args.title
+		title = ''
+		for s in args.title: title += "%s " % s
+	if args.x_label:
+		x_label = ''
+		for s in args.x_label: x_label += "%s " % s
+	if args.y_label:
+		y_label = ''
+		for s in args.y_label: y_label += "%s " % s
 
-        ax.plot(line_bound_x,line_lb_y,".")
-        ax.plot(line_bound_x,line_ub_y,"*")
-###
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
+	#Label plot/axes
+	ax.set_title(title) if args.title else ax.set_title("Cumulative Event Count vs. Time")
+	ax.set_xlabel(x_label) if args.x_label else ax.set_xlabel("Time [days]")
+	ax.set_ylabel(y_label) if args.y_label else ax.set_ylabel("Cumulative Event Count [count]")
 
-        ax.set_xlim( -1, max(x_values)+1 )
-        ax.set_ylim( min(y_values)-50, max(y_values)+50 )
+	#Scale axes logarithmically?
+	if args.log_log_scale:
+		ax.set_xscale('log')
+		ax.set_yscale('log')
 
-        ax.set_xlabel( "Days since main shock" )
-        ax.set_ylabel( "Cumulative number of events" )
+def fit_data(x_values,y_values):
+	"""Find the line which best fits log(x_values) and log(y_values) in the Least Squares sense."""
 
-        ax.set_title( "Haida Gwaii Aftershock Sequence: Cumulative Event Count" )
+	#Are any gaps specified through -g option?
+	GAPS = args.gaps if args.gaps else None
 
-        ax.plot(x_values,y_values,"o")
+	#If no gap end is specified for the last specified gap start, assume gap goes to end of dataset.
+	if not GAPS == None and not len(GAPS)%2 == 0:
+		GAPS.append(x_values[-1])
 
-        ax.plot(line1_x,line1_y,"r")
-        ax.plot(line1_x_extrap,line1_y_extrap,"r--")
+	#Remove all falling within data gaps
+	while not GAPS == None and not len(GAPS) == 0:
+		GAP_START,GAP_END = GAPS.pop(0), GAPS.pop(0)
+		y_values = [ y_values[i] for i in range(len(x_values)) if not (x_values[i] >= GAP_START and x_values[i] <= GAP_END) ]
+		x_values = [ x_values[i] for i in range(len(x_values)) if not (x_values[i] >= GAP_START and x_values[i] <= GAP_END) ]
 
-        ax.plot(line2_x,line2_y,"r")
-        ax.plot(line2_x_extrap,line2_y_extrap,"r--")
+	#Take log of x and y values
+	log_x = [ log(x,10) if not x==0 else 0 for x in x_values ]
+	log_y = [ log(y,10) if not y==0 else 0 for y in y_values ]
 
-        ax.plot(line_ave_x,line_ave_y,"k")
+	#Fit a line to log(x) and log(y)
+	slope,intercept = np.polyfit(log_x,log_y,1)
 
-        ax.plot(line_bound_x,line_lb_y,".")
-        ax.plot(line_bound_x,line_ub_y,"*")
-###    
+	#Calculate A from Omori's law
+	# N(t) = A*t^(1-p)
+	A = pow(10,intercept)
+	
+	#Return A, (1-p)
+	return A,slope
 
+#####
+#MAIN
+#####
 
-def plot_omori(t,mag):
-        D_LEN = 24*60*60        #number of seconds in a day
-        BIN_WIDTH = 1.0         #bin width in days
-        K = 7.8
-        t_max = max(t)
-
-        count = {}
-
-        for time in np.arange(0, t_max+BIN_WIDTH, BIN_WIDTH):
-                count[time] = 0
-
-        for time in t:
-                for key in count:
-                        if time > key-(BIN_WIDTH/2) and time <= key+(BIN_WIDTH/2): count[key]+=1
-
-        bins = sorted(count)
-        nevents = [ count[x] for x in bins ]
-        bin_left = [ x-(BIN_WIDTH/2) for x in bins ]
-
-        def omori_curve(p,t):
-                #return 500/((0.05 + t)**p) if t>0 else count[0.0]
-                return 500/((0.05 + t)**p)
-
-        p = calc_p( count, K )
-        p=1.0
-
-        best_curve = [omori_curve(p,time) for time in bins]
-        curve1 = [omori_curve(0.5,time) for time in bins]
-        curve2 = [omori_curve(1.0,time) for time in bins]
-        curve3 = [omori_curve(1.5,time) for time in bins]
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_title( "Haida Gwaii Aftershock Sequence: Omori's Law" )
-        ax.bar( bin_left, nevents, width=BIN_WIDTH )
-        #ax.plot( bins, best_curve, "r")
-
-        ax.plot( bins, curve1, "r")
-        ax.plot( bins, curve2, "r")
-        ax.plot( bins, curve3, "r")
-
-        ax.set_xlabel( "Days since main shock" )
-        ax.set_xlim( -1, max(bins)+1 )
-        ax.set_ylabel( "Event count" )
-        ax.set_ylim( 0, 500 )
-
-def calc_p( count, K):
-        t_pts = [ 4.0, 20.0, 25.0, 30.0 ]
-        p = []
-
-        for time in t_pts:
-                p.append(log((K/count[time]),time))
-
-        return sum(p)/len(p)
-
-
+#Parse command line options
 parser = argparse.ArgumentParser(description="Plot Omori's Law.")
 
 parser.add_argument('input_file',metavar='infile',type=str,nargs=1,\
                 help = "Input file")
-parser.add_argument('-s',dest='output_file',nargs=1,help='save output to specified file' )
-parser.add_argument('-l','--log_log_scale',action='store_true',help='scale axes logarithmically')
+
+parser.add_argument('-s',dest='output_file',nargs=1,help='Save output to specified file.')
+parser.add_argument('-xint',dest='x_int',nargs=1,type=float,help='X interval (sample spacing) in number of days.')
+parser.add_argument('-g',dest='gaps',nargs='+',type=float,help='Specify gaps over which to ignore data when curve fitting. Specify as GAP_START [GAP_END [GAP_START...]] in decimal days.')
+parser.add_argument('-t',dest='title',nargs='+',type=str,help='Plot title.')
+parser.add_argument('-x',dest='x_label',nargs='+',type=str,help='X-axis label')
+parser.add_argument('-y',dest='y_label',nargs='+',type=str,help='Y-axis label')
+parser.add_argument('-xlim',dest='xlim',nargs=2,type=float,help='Plot domain.')
+parser.add_argument('-ylim',dest='ylim',nargs=2,type=float,help='Plot range.')
+
+parser.add_argument('-f','--fit_data',action='store_true',help="Fit Omori's law curve to data.")
+parser.add_argument('-ll','--log_log_scale',action='store_true',help='Scale axes logarithmically.')
 
 args = parser.parse_args()
 
-t,mag = readfile(args.input_file[0])
+#Read data from input file
+time,mag = readfile(args.input_file[0])
 
-#plot_omori(t,mag)
+#Generate plot
+plot_omori(time,mag)
 
-plot_omori_log_log(t,mag)
-
+#Save figure?
 if args.output_file: plt.savefig(args.output_file[0] + '.png')
 
+#Show figure
 plt.show()
