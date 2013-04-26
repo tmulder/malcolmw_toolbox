@@ -1,1 +1,1 @@
-python src_link/plot_GR.xpy $@
+python $MW_SRC/plot_GR.xpy $@

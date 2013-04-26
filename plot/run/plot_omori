@@ -1,1 +1,1 @@
-python ./src_link/plot_omori.xpy $@
+python $MW_SRC/plot_omori.xpy $@

@@ -51,6 +51,12 @@ def plot_events_per_time(time,mag):
 
 	#Plot bars, don't forget to plot bars logarithmically if necessary
 	ax.bar(x_values,y_values,width=BIN_WIDTH,log=True) if args.log_y_scale else ax.bar(x_values,y_values,width=BIN_WIDTH)
+	#Plot Omori's law decay curve?
+	if args.omori_params:
+		A,p = args.omori_params[0],args.omori_params[1]
+		curve_x = [ x for x in x_values ]
+		curve_y = [ A*(1-p)*pow(x,-p) for x in x_values ]
+		ax.plot(curve_x,curve_y,"r")
 
 	#Reconstruct title/axes labels from command line arguments if necessary
 	if args.title:
@@ -94,6 +100,7 @@ parser.add_argument('-x',dest='x_label',nargs='+',type=str,help='X-axis label')
 parser.add_argument('-y',dest='y_label',nargs='+',type=str,help='Y-axis label')
 parser.add_argument('-xlim',dest='xlim',nargs=2,type=float,help='Plot domain')
 parser.add_argument('-ylim',dest='ylim',nargs=2,type=float,help='Plot range')
+parser.add_argument('-o',dest='omori_params',nargs=2,type=float,help="Omori's law parameters A and p")
 
 parser.add_argument('-ly','--log_y_scale',action='store_true',help='Scale y-axis logarithmically')
 
