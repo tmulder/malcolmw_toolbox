@@ -1,24 +1,62 @@
 import matplotlib.pyplot as plt
-
-import argparse
-
-from math import log,pow
-
 import numpy as np
 
-def readfile(path):
-	""" Read data from input file """
+import argparse
+import sys
+import os
 
+from math import log
+
+sys.path.append(os.environ['ANTELOPE'] + '/data/python')
+
+from antelope.datascope import *
+
+def read_data(path):
+        """Read data from Antelope database."""
+        #Open db
+        dbin = dbopen(path,"r")
+
+        #Create appropriate view
+        dbin = dbin.lookup(table="origin")
+        dbin = dbin.join("event")
+        dbin = dbin.subset("orid==prefor")
+        dbin = dbin.join("netmag")
+
+        #Get record count
+        nrec = dbin.nrecs()
+
+        #Read all magnitude and origin time data into lists
+        #Store origin time as days since epoch
+        mag = [ dbin.getv("magnitude")[0] for dbin[3] in range(nrec) ]
+        time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
+
+        #Remove all null magnitude values and corresponding time values
+        time = [ time[i] for i in range(len(time)) if not mag[i] == -999.00 ]
+        mag = [ m for m in mag if not m == -999.00 ]
+
+        #Convert time to days since first event in db
+        min_time = min(time)
+        time = [ t - min_time for t in time ]
+
+        return time,mag
+
+
+def readfile(path):
+        """Read data from input flat file."""
+
+        #Open file
         infile = open( path, "r" )
 
+        #Empty lists
         magnitude, t = [],[]
 
+        #Read all data from flat file into lists, there should be no null magnitude values
         for line in infile:
                 l = line.split()
                 magnitude.append(float(l[0]))
                 t.append(float(l[1]))
-        return t, magnitude
 
+        return t, magnitude
 
 def plot_omori(time,mag):
 	"""Generate cumulative number of events as function of time plot. Fit Omori's law curve if -f option specified."""
@@ -124,8 +162,8 @@ def fit_data(x_values,y_values):
 #Parse command line options
 parser = argparse.ArgumentParser(description="Plot Omori's Law.")
 
-parser.add_argument('input_file',metavar='infile',type=str,nargs=1,\
-                help = "Input file")
+parser.add_argument('input',metavar='input',type=str,nargs=1,\
+                help = "Input database (Alternatively, input flat file and specify -ff option.)")
 
 parser.add_argument('-s',dest='output_file',nargs=1,help='Save output to specified file.')
 parser.add_argument('-xint',dest='x_int',nargs=1,type=float,help='X interval (sample spacing) in number of days.')
@@ -137,13 +175,15 @@ parser.add_argument('-xlim',dest='xlim',nargs=2,type=float,help='Plot domain.')
 parser.add_argument('-ylim',dest='ylim',nargs=2,type=float,help='Plot range.')
 
 parser.add_argument('-f','--fit_data',action='store_true',help="Fit Omori's law curve to data.")
+parser.add_argument('-ff','--flat_file_input',action='store_true',help='Input is flat file, not Antelope database.')
 parser.add_argument('-ll','--log_log_scale',action='store_true',help='Scale axes logarithmically.')
 parser.add_argument('-d','--display_fit_parameters',action='store_true',help="Display Omori's law parameters determined by best fit.")
 
 args = parser.parse_args()
 
-#Read data from input file
-time,mag = readfile(args.input_file[0])
+#Read data from input flat file or database as appropriate
+if args.flat_file_input: time,mag = readfile(args.input[0])
+else: time,mag = read_data(args.input[0])
 
 #Generate plot
 plot_omori(time,mag)
