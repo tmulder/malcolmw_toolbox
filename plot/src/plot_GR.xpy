@@ -1,12 +1,40 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 import argparse
+import sys.path
+import os.environ
 
 from math import log
 
-import numpy as np
+sys.path.append(os.environ['ANTELOPE'] + '/data/python')
+
+from antelope.datascope import *
+
+def read_data(path):
+	dbin = dbopen(path,"r")
+
+	dbin = dbin.lookup(table="origin")
+	dbin = dbin.join("event")
+	dbin = dbin.subset("orid==prefor")
+	dbin = dbin.join("netmag")
+
+	nrec = dbin.nrecs()
+
+	mag = [ dbin.getv("magnitude") for dbin[3] in range(nrec) ]
+	time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
+
+	time = [ time[i] if not mag[i] == -999.00 for i in range(len(time)) ]
+	mag = [ m if not m == -999.00 for m in mag ]
+
+	min_time = min(time)
+	time = [ t - min_time for t in time ]
+
+	return time,mag
+	
 
 def readfile(path):
+	"""Read data from input file."""
         infile = open( path, "r" )
 
         magnitude, t = [],[]
@@ -18,6 +46,7 @@ def readfile(path):
         return t, magnitude
 
 def plot_gutenberg_richter(mag,log_y_scale):
+	"""Generate plot showing Gutenberg-Richter relationship."""
         #IMPROVEMENT
         #maximum likelihood estimator should be used to determine a,b as opposed to least squares method
         #see http://pasadena.wr.usgs.gov/office/kfelzer/AGU2006Talk.pdf
