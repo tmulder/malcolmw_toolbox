@@ -39,7 +39,7 @@ def plot_events_per_time(time,mag):
 
 	#Initialize an array of zeros corresponding with length corresponding to number of bins
 	y_values = np.zeros(len(x_values))
-	#perform count of # of events in each bin
+	#Perform count of # of events in each bin
 	for ind in inds: y_values[ind-1] += 1
 
 	#Plot data

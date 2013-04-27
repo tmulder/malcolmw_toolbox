@@ -2,35 +2,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import argparse
-import sys.path
-import os.environ
+import sys
+import os
 
-from math import log
+from math import log, pow
 
-sys.path.append(os.environ['ANTELOPE'] + '/data/python')
+#sys.path.append(os.environ['ANTELOPE'] + '/data/python')
 
-from antelope.datascope import *
+#from antelope.datascope import *
 
-def read_data(path):
-	dbin = dbopen(path,"r")
+#def read_data(path):
+#	dbin = dbopen(path,"r")
 
-	dbin = dbin.lookup(table="origin")
-	dbin = dbin.join("event")
-	dbin = dbin.subset("orid==prefor")
-	dbin = dbin.join("netmag")
+#	dbin = dbin.lookup(table="origin")
+#	dbin = dbin.join("event")
+#	dbin = dbin.subset("orid==prefor")
+#	dbin = dbin.join("netmag")
 
-	nrec = dbin.nrecs()
+#	nrec = dbin.nrecs()
 
-	mag = [ dbin.getv("magnitude") for dbin[3] in range(nrec) ]
-	time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
+#	mag = [ dbin.getv("magnitude") for dbin[3] in range(nrec) ]
+#	time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
 
-	time = [ time[i] if not mag[i] == -999.00 for i in range(len(time)) ]
-	mag = [ m if not m == -999.00 for m in mag ]
+#	time = [ time[i] if not mag[i] == -999.00 for i in range(len(time)) ]
+#	mag = [ m if not m == -999.00 for m in mag ]
 
-	min_time = min(time)
-	time = [ t - min_time for t in time ]
+#	min_time = min(time)
+#	time = [ t - min_time for t in time ]
 
-	return time,mag
+#	return time,mag
 	
 
 def readfile(path):
@@ -44,6 +44,51 @@ def readfile(path):
                 magnitude.append(float(l[0]))
                 t.append(float(l[1]))
         return t, magnitude
+
+def plot_gutenberg_richter2(mag):
+	""" Generate a histogram of number of events per unit time bin """
+
+	#Set BIN_WIDTH to default value of delta M = 0.1 if no command line argument provided
+	BIN_WIDTH = args.bin_width[0] if args.bin_width else 0.1
+
+	#Create an array of bin boundaries
+	bins = np.arange(-1.0,9.0,BIN_WIDTH)
+
+	#Get array of indices mapping each magnitude to a bin
+	inds = np.digitize(mag,bins)
+
+	#Find the left hand edge of each bin for plotting
+	x_values = [ bin-(BIN_WIDTH/2) for bin in bins ]
+
+	#Initialize an array of zeros corresponding with length corresponding to number of bins
+	y_values = np.zeros(len(x_values))
+	#Perform count of # of events in each bin
+	for ind in inds: y_values[:ind] += 1
+
+	#Calculate b-value using Maximum Likelihood Estimator
+	b = pow((log(10)*(np.mean(mag) - args.mc)),-1)
+
+	print b
+
+	#Plot Data
+	##########
+	#Create a figure
+        fig = plt.figure()
+	#Add a subplot to figure
+        ax = fig.add_subplot(111)
+
+        ax.set_title( "Gutenberg-Richter Relationship" )
+
+        ax.bar(x_values,y_values,width=BIN_WIDTH)
+
+        ax.set_xlabel( "Magnitude, M" )
+        ax.set_ylabel( "# of Events >= M, N(M)" )
+
+	ax.set_xlim(0,9)
+	ax.set_ylim(0,max(y_values))
+	
+
+	
 
 def plot_gutenberg_richter(mag,log_y_scale):
 	"""Generate plot showing Gutenberg-Richter relationship."""
@@ -124,14 +169,18 @@ def plot_gutenberg_richter(mag,log_y_scale):
 parser = argparse.ArgumentParser(description="Plot Gutenberg-Richter relationship.")
 parser.add_argument('input_file',metavar='infile',type=str,nargs=1,\
                 help = "Input file")
-parser.add_argument('-l','--log_y_scale',action='store_true',help='scale y axis logarithmically')
-parser.add_argument('-s',dest='output_file',nargs=1,help='save output to specified file' )
+parser.add_argument('mc',metavar='mc',type=float,nargs=1,help='Threshold magnitude.')
+
+parser.add_argument('-s',dest='output_file',nargs=1,help='Save output to specified file' )
+parser.add_argument('-b',dest='bin_width',type=float,nargs=1,help='Bin width')
+
+parser.add_argument('-l','--log_y_scale',action='store_true',help='Scale y axis logarithmically')
 
 args = parser.parse_args()
 
 t,mag = readfile(args.input_file[0])
 
-plot_gutenberg_richter(mag,args.log_y_scale)
+plot_gutenberg_richter2(mag)
 
 if args.output_file: plt.savefig(args.output_file[0] + '.png')
 
