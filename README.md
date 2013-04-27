@@ -1,4 +1,4 @@
 toolbox
 =======
 
-Miscellaneious tool repository
+Miscellaneous tool repository
