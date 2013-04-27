@@ -71,6 +71,8 @@ def plot_gutenberg_richter2(mag):
 	for ind in inds: y_values[:ind] += 1
 
 	#Calculate b-value using Maximum Likelihood Estimator
+	#mc is "cutoff magnitude" see Ranalli 1969 - A statistical study of aftershock sequences
+	#for proper use
 	b = pow((log(10)*(np.mean(mag) - args.mc)),-1)
 
 	print b
