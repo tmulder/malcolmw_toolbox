@@ -34,15 +34,20 @@ from math import log, pow
 	
 
 def readfile(path):
-	"""Read data from input file."""
+	"""Read data from input flat file."""
+
+	#Open file
         infile = open( path, "r" )
 
+	#Empty lists
         magnitude, t = [],[]
 
+	#Read all data from flat file into lists, there should be no null magnitude values
         for line in infile:
                 l = line.split()
                 magnitude.append(float(l[0]))
                 t.append(float(l[1]))
+
         return t, magnitude
 
 def plot_gutenberg_richter2(mag):
@@ -175,13 +180,19 @@ parser.add_argument('-s',dest='output_file',nargs=1,help='Save output to specifi
 parser.add_argument('-b',dest='bin_width',type=float,nargs=1,help='Bin width')
 
 parser.add_argument('-l','--log_y_scale',action='store_true',help='Scale y axis logarithmically')
+parser.add_argument('-ff','--flat_file_input',action='store_true',help='Input is flat file, not Antelope database.')
 
 args = parser.parse_args()
 
-t,mag = readfile(args.input_file[0])
+#Read data from input flat file or database as appropriate
+if args.flat_file_input: t,mag = readfile(args.input[0])
+else: t,mag = read_data(args.input[0])
 
+#Generate plot
 plot_gutenberg_richter2(mag)
 
+#Save output?
 if args.output_file: plt.savefig(args.output_file[0] + '.png')
 
+#Show figure
 plt.show()
