@@ -172,8 +172,8 @@ def plot_gutenberg_richter(mag,log_y_scale):
        		ax.text( 6.0, 0.9*y_max, "a=%.3f, b=%.3f" % (a,b) )
 
 parser = argparse.ArgumentParser(description="Plot Gutenberg-Richter relationship.")
-parser.add_argument('input_file',metavar='infile',type=str,nargs=1,\
-                help = "Input file")
+parser.add_argument('input',metavar='input',type=str,nargs=1,\
+                help = "Input database. Specify -ff option to input data via flat file.")
 parser.add_argument('mc',metavar='mc',type=float,nargs=1,help='Threshold magnitude.')
 
 parser.add_argument('-s',dest='output_file',nargs=1,help='Save output to specified file' )
@@ -186,7 +186,7 @@ args = parser.parse_args()
 
 #Read data from input flat file or database as appropriate
 if args.flat_file_input: t,mag = readfile(args.input[0])
-else: t,mag = read_data(args.input[0])
+#else: t,mag = read_data(args.input[0])
 
 #Generate plot
 plot_gutenberg_richter2(mag)
