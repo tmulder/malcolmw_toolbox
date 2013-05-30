@@ -5,32 +5,32 @@ import argparse
 import sys
 import os
 
-from math import log, pow
+from math import log, pow, e, sqrt
 
-#sys.path.append(os.environ['ANTELOPE'] + '/data/python')
+sys.path.append(os.environ['ANTELOPE'] + '/data/python')
 
-#from antelope.datascope import *
+from antelope.datascope import *
 
-#def read_data(path):
-#	dbin = dbopen(path,"r")
+def read_data(path):
+	dbin = dbopen(path,"r")
 
-#	dbin = dbin.lookup(table="origin")
-#	dbin = dbin.join("event")
-#	dbin = dbin.subset("orid==prefor")
-#	dbin = dbin.join("netmag")
+	dbin = dbin.lookup(table="origin")
+	dbin = dbin.join("event")
+	dbin = dbin.subset("orid==prefor")
+	dbin = dbin.join("netmag")
 
-#	nrec = dbin.nrecs()
+	nrec = dbin.nrecs()
 
-#	mag = [ dbin.getv("magnitude") for dbin[3] in range(nrec) ]
-#	time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
+	mag = [ dbin.getv("magnitude")[0] for dbin[3] in range(nrec) ]
+	time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
 
-#	time = [ time[i] if not mag[i] == -999.00 for i in range(len(time)) ]
-#	mag = [ m if not m == -999.00 for m in mag ]
+	time = [ time[i] for i in range(len(time)) if not mag[i]==-999.00 ]
+	mag = [ m for m in mag if not m == -999.00 ]
 
-#	min_time = min(time)
-#	time = [ t - min_time for t in time ]
+	min_time = min(time)
+	time = [ t - min_time for t in time ]
 
-#	return time,mag
+	return time,mag
 	
 
 def readfile(path):
@@ -51,10 +51,16 @@ def readfile(path):
         return t, magnitude
 
 def plot_gutenberg_richter2(mag):
-	""" Generate a histogram of number of events per unit time bin """
+	"""Generate a histogram of number of events per unit time bin and fit Magnitude-Frequency law (Gutenber-Richter) curve """
 
 	#Set BIN_WIDTH to default value of delta M = 0.1 if no command line argument provided
 	BIN_WIDTH = args.bin_width[0] if args.bin_width else 0.1
+
+	#Relabel cutoff magnitude
+	mc = args.mc[0] - BIN_WIDTH/2
+
+	#From list of all magnitudes, create a list of magnitudes >= "cutoff magnitude"
+	mag_c = [m for m in mag if m >= mc ]
 
 	#Create an array of bin boundaries
 	bins = np.arange(-1.0,9.0,BIN_WIDTH)
@@ -69,13 +75,38 @@ def plot_gutenberg_richter2(mag):
 	y_values = np.zeros(len(x_values))
 	#Perform count of # of events in each bin
 	for ind in inds: y_values[:ind] += 1
+	y_values = list(y_values)
 
 	#Calculate b-value using Maximum Likelihood Estimator
-	#mc is "cutoff magnitude" see Ranalli 1969 - A statistical study of aftershock sequences
-	#for proper use
-	b = pow((log(10)*(np.mean(mag) - args.mc)),-1)
+	#mc is "cutoff magnitude"; dataset is complete for events with M >= mc
+	#b = pow((log(10)*(np.mean(mag) - mc)),-1)
+	b_prime = pow((np.mean(mag_c) - mc),-1)
+	b = b_prime*log(e,10)
 
-	print b
+	#print "\nb:\t",b,"\na:\t",a
+	#print "b':\t",b_prime
+
+	#Total number of events with M >= cutoff magnitude
+	K = len(mag_c)
+
+	#Calculate the expected value for cumulative frequency at various M
+	ex_values = [ K*pow(e,(-b_prime*(m - mc))) for m in x_values ]
+
+	print "\nb = b'*log(e)"
+
+	#Calculate 95% confidence interval (upper and lower bounds) for b_prime
+	conf_lb_b_prime = (1 - 1.96/sqrt(K))/(np.mean(mag_c) - mc)
+	conf_ub_b_prime = (1 + 1.96/sqrt(K))/(np.mean(mag_c) - mc)
+
+	print "b' = ",b_prime
+	print conf_lb_b_prime,"<= b' <=",conf_ub_b_prime
+
+	#Calculate 95% confidence interval (upper and lower bounds) for b
+	conf_lb_b = conf_lb_b_prime*log(e,10)
+	conf_ub_b = conf_ub_b_prime*log(e,10)
+
+	print "\nb = ",b
+	print conf_lb_b,"<= b <=",conf_ub_b
 
 	#Plot Data
 	##########
@@ -88,10 +119,15 @@ def plot_gutenberg_richter2(mag):
 
         ax.bar(x_values,y_values,width=BIN_WIDTH)
 
+	ax.plot(x_values,ex_values,"r")
+
+	ax.axvline(x=mc,color="k",linestyle="--")
+	#ax.text(mc+0.1,0.9*max(y_values),"Completeness threshold")
+
         ax.set_xlabel( "Magnitude, M" )
         ax.set_ylabel( "# of Events >= M, N(M)" )
 
-	ax.set_xlim(0,9)
+	ax.set_xlim(0,x_values[y_values.index(0)+1])
 	ax.set_ylim(0,max(y_values))
 	
 
@@ -99,6 +135,10 @@ def plot_gutenberg_richter2(mag):
 
 def plot_gutenberg_richter(mag,log_y_scale):
 	"""Generate plot showing Gutenberg-Richter relationship."""
+
+	#THIS IS OLD AND CAN LIKELY BE DELETED
+	#MAKE SURE YOU AREN'T BLOWING SOMETHING AWAY THAT YOU MAY NEED LATER
+
         #IMPROVEMENT
         #maximum likelihood estimator should be used to determine a,b as opposed to least squares method
         #see http://pasadena.wr.usgs.gov/office/kfelzer/AGU2006Talk.pdf
@@ -188,7 +228,7 @@ args = parser.parse_args()
 
 #Read data from input flat file or database as appropriate
 if args.flat_file_input: t,mag = readfile(args.input[0])
-#else: t,mag = read_data(args.input[0])
+else: t,mag = read_data(args.input[0])
 
 #Generate plot
 plot_gutenberg_richter2(mag)
