@@ -5,7 +5,7 @@ import argparse
 import sys
 import os
 
-from math import log, pow, e, sqrt
+from math import log, e, sqrt
 
 sys.path.append(os.environ['ANTELOPE'] + '/data/python')
 
