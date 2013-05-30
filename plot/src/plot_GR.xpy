@@ -50,7 +50,7 @@ def readfile(path):
 
         return t, magnitude
 
-def plot_gutenberg_richter2(mag):
+def plot_gutenberg_richter(mag):
 	"""Generate a histogram of number of events per unit time bin and fit Magnitude-Frequency law (Gutenber-Richter) curve """
 
 	#Set BIN_WIDTH to default value of delta M = 0.1 if no command line argument provided
@@ -79,12 +79,8 @@ def plot_gutenberg_richter2(mag):
 
 	#Calculate b-value using Maximum Likelihood Estimator
 	#mc is "cutoff magnitude"; dataset is complete for events with M >= mc
-	#b = pow((log(10)*(np.mean(mag) - mc)),-1)
 	b_prime = pow((np.mean(mag_c) - mc),-1)
 	b = b_prime*log(e,10)
-
-	#print "\nb:\t",b,"\na:\t",a
-	#print "b':\t",b_prime
 
 	#Total number of events with M >= cutoff magnitude
 	K = len(mag_c)
@@ -92,21 +88,19 @@ def plot_gutenberg_richter2(mag):
 	#Calculate the expected value for cumulative frequency at various M
 	ex_values = [ K*pow(e,(-b_prime*(m - mc))) for m in x_values ]
 
-	print "\nb = b'*log(e)"
+	print "\nb = b'*log(e)\n"
 
 	#Calculate 95% confidence interval (upper and lower bounds) for b_prime
 	conf_lb_b_prime = (1 - 1.96/sqrt(K))/(np.mean(mag_c) - mc)
 	conf_ub_b_prime = (1 + 1.96/sqrt(K))/(np.mean(mag_c) - mc)
 
-	print "b' = ",b_prime
-	print conf_lb_b_prime,"<= b' <=",conf_ub_b_prime
+	print "b' = ",b_prime,"\n95% confidence interval:",conf_lb_b_prime,"<= b' <=",conf_ub_b_prime
 
 	#Calculate 95% confidence interval (upper and lower bounds) for b
 	conf_lb_b = conf_lb_b_prime*log(e,10)
 	conf_ub_b = conf_ub_b_prime*log(e,10)
 
-	print "\nb = ",b
-	print conf_lb_b,"<= b <=",conf_ub_b
+	print "\nb = ",b,"\n95% confidence interval:",conf_lb_b,"<= b <=",conf_ub_b
 
 	#Plot Data
 	##########
@@ -122,7 +116,6 @@ def plot_gutenberg_richter2(mag):
 	ax.plot(x_values,ex_values,"r")
 
 	ax.axvline(x=mc,color="k",linestyle="--")
-	#ax.text(mc+0.1,0.9*max(y_values),"Completeness threshold")
 
         ax.set_xlabel( "Magnitude, M" )
         ax.set_ylabel( "# of Events >= M, N(M)" )
@@ -133,7 +126,7 @@ def plot_gutenberg_richter2(mag):
 
 	
 
-def plot_gutenberg_richter(mag,log_y_scale):
+def plot_gutenberg_richter_old(mag,log_y_scale):
 	"""Generate plot showing Gutenberg-Richter relationship."""
 
 	#THIS IS OLD AND CAN LIKELY BE DELETED
@@ -231,7 +224,7 @@ if args.flat_file_input: t,mag = readfile(args.input[0])
 else: t,mag = read_data(args.input[0])
 
 #Generate plot
-plot_gutenberg_richter2(mag)
+plot_gutenberg_richter(mag)
 
 #Save output?
 if args.output_file: plt.savefig(args.output_file[0] + '.png')
