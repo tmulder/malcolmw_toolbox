@@ -71,6 +71,8 @@ def plot_omori(time,mag):
 	bins = np.arange(0,t_max+X_INT,X_INT)
 
 	#Bin events
+	print time
+	print bins
 	count = np.zeros(len(bins))
 	inds = np.digitize(time,bins)
 	for i in inds:
