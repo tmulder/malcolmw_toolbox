@@ -157,6 +157,73 @@ def fit_data(x_values,y_values):
 	#Return A, (1-p)
 	return A,slope
 
+def plot_omori_max_likelihood(time,mag):
+	"""Generate cumulative number of events as function of time plot. Fit Omori's law curve (maximum likelihood method) if -f option specified."""
+
+	#Get the maximum origin time
+        t_max = max(time)
+
+	#Create bins whose boundaries are defined by t* = 10**(0.1*i) for i = 0.1,0.2,...22.0
+	bins = np.arange(0,t_max+X_INT,X_INT)
+
+	#Bin events
+	print time
+	print bins
+	count = np.zeros(len(bins))
+	inds = np.digitize(time,bins)
+	for i in inds:
+		count[i-1] += 1
+
+	#Perform a cumulative count of events in each bin
+	cum_count = count.cumsum()
+
+	x_values = [ b for b in bins ]
+	y_values = [ c for c in cum_count ]
+
+
+	#Plot data
+	##########
+	#Create figure
+	fig = plt.figure()
+	#Add a subplot
+	ax = fig.add_subplot(111)
+
+	ax.plot(x_values,y_values,"bo")
+
+	#Determine constants to Omori's law, if -f option specified
+	# N(t) = A*t^(1-p)
+	# N(t) = A*t^m
+	if args.fit_data:
+		A,m = fit_data(x_values,y_values)
+		curve_x = x_values
+		curve_y = [ A*pow(x,m) for x in x_values ]
+		ax.plot(curve_x,curve_y,"r")
+		#Display fit parameters?
+		if args.display_fit_parameters: ax.text(0.1*max(x_values),0.9*max(y_values),"N(t) = A*t^(1-p)\nA = %.3f\np = %.3f" % (A,abs(m-1)))
+
+	#Reconstruct title/axes labels from command line arguments if necessary
+	if args.title:
+		#print args.title
+		title = ''
+		for s in args.title: title += "%s " % s
+	if args.x_label:
+		x_label = ''
+		for s in args.x_label: x_label += "%s " % s
+	if args.y_label:
+		y_label = ''
+		for s in args.y_label: y_label += "%s " % s
+
+	#Label plot/axes
+	ax.set_title(title) if args.title else ax.set_title("Cumulative Event Count vs. Time")
+	ax.set_xlabel(x_label) if args.x_label else ax.set_xlabel("Time [days]")
+	ax.set_ylabel(y_label) if args.y_label else ax.set_ylabel("Cumulative Event Count [count]")
+
+	#Scale axes logarithmically?
+	if args.log_log_scale:
+		ax.set_xscale('log')
+		ax.set_yscale('log')
+
+
 #####
 #MAIN
 #####
