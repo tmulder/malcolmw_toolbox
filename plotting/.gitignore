@@ -1,3 +1,6 @@
 plot_GR
 plot_omori
 plot_events_per_time
+compare_filters
+distribution_plot
+plot_filter_kernel
