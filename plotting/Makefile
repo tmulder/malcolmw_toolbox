@@ -3,6 +3,7 @@ BIN= plot_GR \
      plot_omori\
      distribution_plot \
      compare_filters\
-	 plot_filter_kernel\
+     plot_filter_kernel\
+     obspy_dayplot
 
 include $(ANTELOPEMAKE)
