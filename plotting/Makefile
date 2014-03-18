@@ -4,6 +4,5 @@ BIN= plot_GR \
      distribution_plot \
      compare_filters\
 	 plot_filter_kernel\
-	 plot_corr
 
 include $(ANTELOPEMAKE)
