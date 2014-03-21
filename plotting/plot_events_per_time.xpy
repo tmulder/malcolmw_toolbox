@@ -14,25 +14,26 @@ def read_data(path):
         dbin = dbin.lookup(table="origin")
         dbin = dbin.join("event")
         dbin = dbin.subset("orid==prefor")
-        dbin = dbin.join("netmag")
+#        dbin = dbin.join("netmag")
 
         #Get record count
         nrec = dbin.nrecs()
 
         #Read all magnitude and origin time data into lists
         #Store origin time as days since epoch
-        mag = [ dbin.getv("magnitude")[0] for dbin[3] in range(nrec) ]
+#        mag = [ dbin.getv("magnitude")[0] for dbin[3] in range(nrec) ]
         time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
 
         #Remove all null magnitude values and corresponding time values
-        time = [ time[i] for i in range(len(time)) if not mag[i] == -999.00 ]
-        mag = [ m for m in mag if not m == -999.00 ]
+#        time = [ time[i] for i in range(len(time)) if not mag[i] == -999.00 ]
+#        mag = [ m for m in mag if not m == -999.00 ]
 
         #Convert time to days since first event in db
         min_time = min(time)
         time = [ t - min_time for t in time ]
 
-        return time,mag
+#        return time,mag
+        return time
 
 def readfile(path):
         """Read data from input flat file."""
@@ -41,17 +42,20 @@ def readfile(path):
         infile = open( path, "r" )
 
         #Empty lists
-        magnitude, t = [],[]
+#        magnitude, t = [],[]
+        t = []
 
         #Read all data from flat file into lists, there should be no null magnitude values
         for line in infile:
                 l = line.split()
-                magnitude.append(float(l[0]))
+#                magnitude.append(float(l[0]))
                 t.append(float(l[1]))
 
-        return t, magnitude
+#        return t, magnitude
+        return t
 
-def plot_events_per_time(time,mag):
+#def plot_events_per_time(time,mag):
+def plot_events_per_time(time):
 	""" Generate a histogram of number of events per unit time bin """
 
 	#Set BIN_WIDTH to default value of 1 day if no command line argument provided
@@ -140,14 +144,16 @@ parser.add_argument('-ff','--flat_file_input',action='store_true',help='Input is
 args = parser.parse_args()
 
 #Read data from input file or database as appropriate
-if args.flat_file_input: time,mag = readfile(args.input[0])
-else: time,mag = read_data(args.input[0])
+#if args.flat_file_input: time,mag = readfile(args.input[0])
+#else: time,mag = read_data(args.input[0])
+if args.flat_file_input: time = readfile(args.input[0])
+else: time = read_data(args.input[0])
 
 #Generate plot
-plot_events_per_time(time,mag)
+plot_events_per_time(time)
 
 #Save figure?
-if args.output_file: plt.savefig(args.output_file[0] + '.png')
+if args.output_file: plt.savefig(args.output_file[0] + '.svg')
 
 #Show figure
 plt.show()
