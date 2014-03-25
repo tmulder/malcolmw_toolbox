@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 from math import log
-from antelope.datascope import *
+from antelope.datascope import dbopen, dbRECORD_COUNT
 
 
 def read_data(path):
@@ -17,12 +17,12 @@ def read_data(path):
 #        dbin = dbin.join("netmag")
 
         #Get record count
-        nrec = dbin.nrecs()
+        nrec = dbin.query(dbRECORD_COUNT)
 
         #Read all magnitude and origin time data into lists
         #Store origin time as days since epoch
 #        mag = [ dbin.getv("magnitude")[0] for dbin[3] in range(nrec) ]
-        time = [ dbin.getv("time")[0]/(24*60*60) for dbin[3] in range(nrec) ]
+        time = [ dbin.getv("time")[0]/(24*60*60) for dbin.record in range(nrec) ]
 
         #Remove all null magnitude values and corresponding time values
 #        time = [ time[i] for i in range(len(time)) if not mag[i] == -999.00 ]
