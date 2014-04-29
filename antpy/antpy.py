@@ -1,3 +1,11 @@
+"""
+A module containing miscellaneous Antelope Python API convenience
+functions.
+
+Caveats:
+This module is dependant on the 5.4 version of the Antelope Python
+API and backwards compatibility is not guaranteed.
+"""
 import sys
 import os
 sys.path.append('%s/data/python' % os.environ['ANTELOPE'])
@@ -6,10 +14,31 @@ from antelope.datascope import Dbptr
 
 def distance(lat1, lon1, lat2, lon2, in_km=False):
     """
-    Returns the distance in degrees between a point with latitude and
-    longitude of lat1, lon1 respectively and a point with latitude and
-    longitude of lat2, lon2 respectively. Returns the distance in km if
-    in_km is set to a True value.
+    Return the distance between two geographical points.
+
+    Arguments:
+    lat1 - geographical latitude of point A
+    lon1 - geographical longitude of point A
+    lat2 - geographical latitude of point B
+    lon2 - geographical longitude of point B
+
+    Keyword Arguments:
+    in_km - Default: False. If in_km is a value which evaluates to
+        True, the distance between point A and point B is returned
+        in kilometers.
+
+    Returns:
+    Returns the distance between point A and point B. By default,
+    distance is returned in degrees.
+
+    Example:
+    In [1]: import antpy
+
+    In [2]: antpy.distance(45.45, -75.7, 32.7, -117.17)
+    Out[2]: 34.17313568649101
+
+    In [3]: antpy.distance(45.45, -75.7, 32.7, -117.17, in_km=True)
+    Out[3]: 3804.1522020402367
     """
     if in_km:
         return Dbptr().ex_eval('deg2km(%f)' %
@@ -20,12 +49,43 @@ def distance(lat1, lon1, lat2, lon2, in_km=False):
 
 def azimuth(lat1, lon1, lat2, lon2):
     """
-    Returns the azimuth from (lat1, lon1) to (lat2, lon2)
+    Returns the azimuth between two geographical points.
+
+    Arguments:
+    lat1 - geographical latitude of point A
+    lon1 - geographical longitude of point A
+    lat2 - geographical latitude of point B
+    lon2 - geographical longitude of point B
+
+    Returns:
+    Returns the azimuth between point A and point B in degrees.
+
+    Example:
+    In [1]: import antpy
+
+    In [2]: antpy.azimuth(45.45, -75.7, 32.7, -117.17)
+    Out[2]: 262.80443927342213
     """
     return Dbptr().ex_eval('azimuth(%f, %f, %f, %f)'
             % (lat1, lon1, lat2, lon2))
 
 def get_null_value(table, field):
+    """
+    Returns the null value of a particular field in the CSS3.0 schema.
+
+    Arguments:
+    table - A table in the CSS3.0 schema.
+    field - A field in table.
+
+    Returns:
+    The null value of the field for the table from the CSS3.0 schema.
+
+    Example:
+    In [1]: import antpy
+
+    In [2]: antpy.get_null_value('origin', 'time')
+    Out[2]: -9999999999.999
+    """
     nulls = {'origin': {\
                 'lat': -999.0000,\
                 'lon': -999.000,\
