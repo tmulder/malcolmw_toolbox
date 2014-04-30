@@ -165,3 +165,62 @@ def get_null_value(table, field):
                     }
             }
     return nulls[table][field]
+
+def eval_dict(mydict):
+    """
+    Return dictionary created by recursively calling eval() on elements
+    of input dictionary.
+
+    The the method antelope.stock.ParameterFile.pf2dict returns a
+    dictionary with all str-type values. This method is intended
+    primarily to take such dictionary and typecast integers to
+    int-type values and floating points to float-type values.
+
+    Arguments:
+    mydict - Dictionary to be typecast.
+
+    Returns:
+    mydict - Typecasted dictionary.
+
+    Caveats:
+    Because this method uses the built-in function eval(), if the value
+    of any dictionary element is a string of Python executable code,
+    that code will be executed and the return value assigned to that
+    element of the dictionary.
+
+    Example:
+    In [1]: from antpy import eval_dict
+
+    In [2]: mydict = {'key1': '3',
+       ...:           'key2': '4.5',
+       ...:           'key3': {'key3A': 'A string.',
+       ...:                    'key3B': 'Another string.',
+       ...:                    'key3C': {'key3CA': '25',
+       ...:                              'key3CB': '67.3'
+       ...:                             }
+       ...:                  },
+       ...:          'key4': '33 + 24',
+       ...:           'key5': 'max([1, 2, 3, 4, 5, 6, 7])'
+       ...:          }
+
+    In [3]: eval_dict(mydict)
+    Out[3]:
+    {'key1': 3,
+     'key2': 4.5,
+     'key3': {'key3A': 'A string.',
+              'key3B': 'Another string.',
+              'key3C': {'key3CA': 25,
+                        'key3CB': 67.3
+                       }
+             },
+    'key4': 57,
+    'key5': 7}
+    """
+    for key in mydict:
+        if isinstance(mydict[key], dict): eval_dict(mydict[key])
+        else:
+            try:
+                mydict[key] = eval(mydict[key])
+            except SyntaxError:
+                pass
+    return mydict
