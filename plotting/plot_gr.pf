@@ -1,0 +1,4 @@
+title               Gutenberg-Richter Relationship
+xlabel              Magnitude, M
+ylabel              \# of Events >= M, N(M)
+x_axis_lower_limit  1.0
