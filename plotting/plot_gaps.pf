@@ -1,0 +1,88 @@
+plot_start_time     1350259200.000 #Epoch start time for plot
+plot_end_time       1358208002.000 #Epoch end time for plot
+main_shock_time     1351454640.000
+study_start_time    1351382400.000
+study_end_time      1355616000.000
+
+title       Aftershock Station Up-Time
+ylabel     Station Code
+xlabel     2012/2013
+
+sta_match   &Tbl{
+#.* #.* matches all stations
+BBB
+BNAB
+BNB
+DIB
+HG1B
+HG3B
+HG4B
+HGPB
+HGSB
+LIB
+MASB
+MOBC
+MOBC2
+NDB
+OHG01
+OHG02
+OHG03
+OHG04
+OHG05
+OHG06
+OHG07
+OHG08
+OHG09
+OHG10
+OHG11
+OHG12
+OHG13
+OHG14
+RUBB
+STJA
+TKWB
+TSUB
+VIB
+}
+
+groups  &Arr{
+BBB     Permanent
+BNAB    Permanent
+BNB     Permanent
+DIB     Permanent
+HG1B    Aftershock
+HG3B    Aftershock
+HG4B    Aftershock
+HGPB    Aftershock
+HGSB    Aftershock
+LIB     Permanent
+MASB    Permanent
+MOBC    Permanent
+MOBC2   Aftershock
+NDB     Permanent
+OHG01   OBS
+OHG02   OBS
+OHG03   OBS
+OHG04   OBS
+OHG05   OBS
+OHG06   OBS
+OHG07   OBS
+OHG08   OBS
+OHG09   OBS
+OHG10   OBS
+OHG11   OBS
+OHG12   OBS
+OHG13   OBS
+OHG14   OBS
+RUBB    Permanent
+STJA    Aftershock
+TKWB    Aftershock
+TSUB    Aftershock
+VIB     Permanent
+}
+
+colours &Arr{
+Permanent   444444
+Aftershock  777777
+OBS         EEEEEE
+}
