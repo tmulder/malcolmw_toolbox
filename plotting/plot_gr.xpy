@@ -89,6 +89,7 @@ def _plot(args):
     #Calculate 95% confidence interval for b
     conf_lb_b = conf_lb_b_prime * log(e, 10)
     conf_ub_b = conf_ub_b_prime * log(e, 10)
+    b_error = max([abs(b_value - a) for a in (conf_lb_b, conf_ub_b)])
     print "b = %.4f" % b_value, "\n95% confidence interval:", \
             "%.4f <= b <= %.4f" % (conf_lb_b, conf_ub_b)
     fig = plt.figure()
@@ -104,7 +105,7 @@ def _plot(args):
     #Add a cool box with some info
     bbox_props = dict(boxstyle='round', facecolor='0.05', alpha=0.25)
     ax.text(0.70, 0.90,
-            '$b = %.4f$\n$M_{complete} = %.2f$' % (b_value, m_cutoff),
+            '$b = %.3f \pm %.3f$\n$M_{complete} = %.2f$' % (b_value, b_error, m_cutoff),
             transform=ax.transAxes,
             fontsize=16,
             verticalalignment='top',
