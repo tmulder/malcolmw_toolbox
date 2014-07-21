@@ -22,7 +22,6 @@ def _read_pf(args):
     Read and return contents of parameter file.
     """
     from antelope.stock import pfread, pfin
-    print args
     parameter_file = args.parameter_file
     if parameter_file:
         if os.path.splitext(parameter_file)[1] == '.pf':
