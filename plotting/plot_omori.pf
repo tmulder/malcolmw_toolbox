@@ -1,0 +1,3 @@
+title       Cumulative Event Count vs. Time
+xlabel      Time [days]
+ylabel      Cumulative Event Count [count]
