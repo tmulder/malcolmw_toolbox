@@ -166,7 +166,7 @@ def get_null_value(table, field):
             }
     return nulls[table][field]
 
-def eval_dict(mydict):
+def eval_pfile(pfile):
     """
     Recursively typecast dictionary values of str-type to int-type
     or float-type values if appropriate.
@@ -177,15 +177,15 @@ def eval_dict(mydict):
     int-type values and floating points to float-type values.
 
     Arguments:
-    mydict - Dictionary to be typecast.
+    pfile - Dictionary to be typecast.
 
     Returns:
-    mydict - Typecasted dictionary.
+    pfile - Typecasted dictionary.
 
     Example:
-    In [1]: from antpy import eval_dict
+    In [1]: from antpy import eval_pfile
 
-    In [2]: mydict = {'key1': '3',
+    In [2]: pfile = {'key1': '3',
        ...:           'key2': '4.5',
        ...:           'key3': {'key3A': 'A string.',
        ...:                    'key3B': 'Another string.',
@@ -195,7 +195,7 @@ def eval_dict(mydict):
        ...:                  }
        ...:          }
 
-    In [3]: eval_dict(mydict)
+    In [3]: eval_pfile(pfile)
     Out[3]:
     {'key1': 3,
      'key2': 4.5,
@@ -207,15 +207,15 @@ def eval_dict(mydict):
               }
     }
     """
-    for key in mydict:
-        if isinstance(mydict[key], dict): eval_dict(mydict[key])
+    for key in pfile:
+        if isinstance(pfile[key], dict):
+            eval_pfile(pfile[key])
         else:
+            if key in locals():
+                continue
             try:
-                mydict[key] = int(mydict[key])
-            except ValueError:
-                try:
-                    mydict[key] = float(mydict[key])
-                except ValueError:
-                    pass
+                pfile[key] = eval(pfile[key])
+            except NameError:
+                pass
 
-    return mydict
+    return pfile
