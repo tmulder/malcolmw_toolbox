@@ -215,7 +215,7 @@ def eval_pfile(pfile):
                 continue
             try:
                 pfile[key] = eval(pfile[key])
-            except NameError:
+            except (NameError, SyntaxError):
                 pass
 
     return pfile
