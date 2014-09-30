@@ -14,12 +14,12 @@ def plot_kernel(filt, twin):
     tr = dbopen("/tmp/tmpdb_plot_filter_kernel", 'r')
     tr = tr.lookup(table="trace")
     tr.record = tr.addnull()
-    tr.putdata([0.0 if i > 0 else 1.0 for i in range(int(twin*SAMPRATE))])
-    tr.putv("samprate", SAMPRATE)
-    tr.filter(filt)
+    tr.trputdata([0.0 if i != int(twin * SAMPRATE / 2.0) else 1.0 for i in range(int(twin*SAMPRATE))])
+    tr.putv(("samprate", SAMPRATE))
+    tr.trfilter(filt)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(tr.data())
+    ax.plot(tr.trdata())
     plt.show()
 
 def main():
