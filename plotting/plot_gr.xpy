@@ -39,6 +39,9 @@ def _read_data(args):
     """
     Read and return data from database.
     """
+    if not os.path.isfile(args.dbin):
+        print "Input database does not exist. Please check path."
+        sys.exit(-1)
     with closing(dbopen(args.dbin, 'r')) as db:
         view = db.schema_tables['origin']
         view = view.join('event')
@@ -111,7 +114,6 @@ def _plot(args):
             bbox=bbox_props)
     if args.save_as: plt.savefig('%s.png' % args.save_as)
     plt.show()
-
 
 if __name__ == '__main__':
     from antelope.datascope import closing, dbopen
