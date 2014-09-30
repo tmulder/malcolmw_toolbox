@@ -4,7 +4,8 @@ BIN= plot_gr \
      distribution_plot \
      compare_filters\
      plot_filter_kernel\
+	 plot_gaps
 #     obspy_dayplot\
-     stamag_vs_dist
+#     stamag_vs_dist
 
 include $(ANTELOPEMAKE)
