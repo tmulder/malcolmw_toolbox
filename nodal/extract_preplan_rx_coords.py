@@ -17,15 +17,19 @@ def _parse_args():
 if __name__ == "__main__":
     args = _parse_args()
     outfile = open(args.outfile, 'w')
+    stas = []
     for dir in args.segd_dirs:
         string =  "Processing %s" % dir
         print string
         print "=" * len(string)
         for file in sorted(os.listdir(dir)):
-            print "\tProcessing %s" % file
-            segd = SegD('%s/%s' % (dir, file))
-            x, y = segd.get_rx_coords_preplan()
-            lat, lon = utm2latlon(x, y, 11, 'S')
-            outfile.write('%s %s %.6f %.6f\n' % (file[:3], file[4:6], lon, lat))
+            sta = "%s %s" % (file[:3], file[4:6])
+            if sta not in stas:
+                stas += [sta]
+                print "\tProcessing %s" % file
+                segd = SegD('%s/%s' % (dir, file))
+                x, y = segd.get_rx_coords_preplan()
+                lat, lon = utm2latlon(x, y, 11, 'S')
+                outfile.write('%s %.6f %.6f\n' % (sta, lon, lat))
     outfile.close()
 
