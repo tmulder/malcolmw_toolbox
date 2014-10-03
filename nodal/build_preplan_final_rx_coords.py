@@ -31,18 +31,18 @@ if __name__ == "__main__":
                     "coordinate file."
             sys.exit(-1)
 #Check to make sure files contain the same number of lines
-    fin_infile.seek(0)
-    prepl_infile.seek(0)
-    fin_counter = 0
-    for line in fin_infile:
-        fin_counter += 1
-    prepl_counter = 0
-    for line in prepl_infile:
-        prepl_counter += 1
-    if fin_counter != prepl_counter:
-        print "Final coordinate file has %d lines and pre-plan coordinate "\
-                "file has %d lines" % (fin_counter, prepl_counter)
-        sys.exit(-1)
+#    fin_infile.seek(0)
+#    prepl_infile.seek(0)
+#    fin_counter = 0
+#    for line in fin_infile:
+#        fin_counter += 1
+#    prepl_counter = 0
+#    for line in prepl_infile:
+#        prepl_counter += 1
+#    if fin_counter != prepl_counter:
+#        print "Final coordinate file has %d lines and pre-plan coordinate "\
+#                "file has %d lines" % (fin_counter, prepl_counter)
+#        sys.exit(-1)
 #Build the file like
 #Line Column PrePlanLon PrePlanLat FinalLon FinalLat
     fin_infile.seek(0)
@@ -57,12 +57,12 @@ if __name__ == "__main__":
             if fin_line[:6] == sta:
                 fin_line = fin_line.split()
                 fin_lon, fin_lat = fin_line[2], fin_line[3]
+                outfile.write("%s %s %s %s %s\n" % (sta,
+                                                    prepl_lon,
+                                                    prepl_lat,
+                                                    fin_lon,
+                                                    fin_lat))
                 break
-        outfile.write("%s %s %s %s %s\n" % (sta,
-                                            prepl_lon,
-                                            prepl_lat,
-                                            fin_lon,
-                                            fin_lat))
     prepl_infile.close()
     fin_infile.close()
     outfile.close()
