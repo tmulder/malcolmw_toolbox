@@ -1,6 +1,6 @@
 import sys
 
-def _parse_args()
+def _parse_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
     return parser.parse_args()
