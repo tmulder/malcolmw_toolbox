@@ -28,7 +28,7 @@ if __name__ == "__main__":
                 break
         if not found_sta:
             print "%s exists in final coordinate file but not in pre-plan "\
-                    "coordinate file."
+                    "coordinate file." % sta
             sys.exit(-1)
 #Check to make sure files contain the same number of lines
 #    fin_infile.seek(0)
